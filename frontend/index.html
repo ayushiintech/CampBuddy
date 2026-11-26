@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fff8fa">
+  <title>CampBuddy · Campus Assistant</title>
+  <link rel="icon" href="static/icon-192.png">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+  <script src="campus-tools.js" defer></script>
+</head>
+<body>
+  <div class="workspace" id="workspace">
+    <button class="scrim" id="scrim" type="button" aria-label="Close sidebar" hidden></button>
+    <aside id="sidebar" aria-label="Workspace navigation">
+      <div class="brand-row">
+        <div class="brand-mark" aria-hidden="true">C<span>.</span></div>
+        <strong class="brand">CampBuddy</strong>
+      </div>
+      <button class="new-chat" id="new-chat" type="button"><span aria-hidden="true">＋</span> New chat</button>
+      <nav class="tools" aria-label="Campus tools">
+        <button id="open-library" type="button"><span class="nav-glyph" aria-hidden="true">▤</span> Uploaded Documents</button>
+        <button id="open-search" type="button"><span class="nav-glyph search-icon" aria-hidden="true"></span> Semantic search</button>
+        <button id="open-notice" type="button"><span class="nav-glyph" aria-hidden="true">◎</span> Notice Detective</button>
+        <button id="open-alerts" type="button"><span class="nav-glyph" aria-hidden="true">◷</span> Smart Campus Alarm</button>
+        <button id="open-gaps" type="button"><span class="nav-glyph" aria-hidden="true">▥</span> Knowledge Gap Dashboard</button>
+      </nav>
+      <section class="recent" aria-labelledby="recent-title">
+        <h2 id="recent-title">Recent chats</h2>
+        <div id="recent-chats"><p class="muted">Your conversations will appear here.</p></div>
+      </section>
+      <div class="sidebar-footer">
+        <span class="connection" id="connection" data-state="pending" role="status">Connecting</span>
+        <button class="icon-button" id="theme" type="button" aria-label="Dark mode" aria-pressed="false">☾</button>
+        <button class="icon-button" id="open-settings" type="button" aria-label="Settings">⚙</button>
+      </div>
+    </aside>
+
+    <main class="empty" id="main">
+      <header class="chat-bar">
+        <button class="icon-button" id="menu" aria-label="Toggle sidebar" aria-expanded="true" aria-controls="sidebar" type="button"><span class="panel-icon" aria-hidden="true"></span></button>
+        <span id="conversation-title">Campus assistant</span>
+      </header>
+      <div class="chat-scroll" id="chat-scroll">
+        <section class="welcome" id="welcome" aria-labelledby="welcome-title">
+          <div class="welcome-mark" aria-hidden="true">C<span>.</span></div>
+          <h1 id="welcome-title">Your campus, one conversation away.</h1>
+          <p>Find answers in your handbooks, policies, and course materials.</p>
+        </section>
+        <div id="messages" class="messages" role="log" aria-label="Conversation"></div>
+      </div>
+      <div class="composer-area">
+        <form id="chat-form" class="composer">
+          <textarea id="question" aria-label="Your campus question" rows="1" placeholder="Ask anything about your campus..."></textarea>
+          <div class="composer-controls">
+            <button class="attach" id="attach" type="button" title="Index a campus document"><span aria-hidden="true">＋</span> Add document</button>
+            <button class="primary send" id="send" type="submit" aria-label="Send question" disabled>↑</button>
+            <button class="primary send" id="stop" type="button" aria-label="Stop response" hidden>■</button>
+          </div>
+        </form>
+      </div>
+      <div class="suggestions" id="suggestions" aria-label="Suggested questions">
+        <button type="button" data-prompt="What are the tuition fee deadlines?">Tuition deadlines <span aria-hidden="true">↗</span></button>
+        <button type="button" data-prompt="What is the attendance policy?">Attendance policy <span aria-hidden="true">↗</span></button>
+        <button type="button" data-prompt="How do I register for campus housing?">Campus housing <span aria-hidden="true">↗</span></button>
+      </div>
+      <p class="composer-note">Answers are based on your indexed documents.</p>
+    </main>
+    <section id="alerts" class="alarm-dashboard" aria-labelledby="alerts-title" hidden>
+      <header class="alarm-topbar">
+        <button id="alarm-menu" class="icon-button" type="button" aria-label="Toggle sidebar" aria-controls="sidebar"><span class="panel-icon" aria-hidden="true"></span></button>
+        <button id="return-chat" class="text-button" type="button">← Back to chat</button>
+      </header>
+      <div class="alarm-layout">
+        <div class="alarm-content">
+          <header class="alarm-header">
+            <div><h1 id="alerts-title" tabindex="-1">Smart Campus Alarm</h1><p id="alarm-week-summary" class="muted" aria-live="polite"></p></div>
+            <button id="new-reminder" class="primary" type="button">＋ New reminder</button>
+          </header>
+          <section aria-labelledby="alarm-upcoming-title">
+            <h2 id="alarm-upcoming-title">Upcoming deadlines</h2>
+            <div id="alarm-upcoming" class="alarm-upcoming"></div>
+          </section>
+          <section aria-labelledby="saved-reminders-title">
+            <h2 id="saved-reminders-title">Saved reminders</h2>
+            <p class="muted">Import a reminder’s calendar file into your calendar app to receive its alarm.</p>
+            <div id="saved-alerts" class="alarm-reminders" aria-live="polite"></div>
+          </section>
+          <details class="alarm-discover">
+            <summary>Find dates in campus notices</summary>
+    <form id="alerts-form" class="search-form">
+      <input id="alert-topic" type="search" aria-label="Campus alert topic" placeholder="Try registration, exams, or fees">
+      <button id="alerts-submit" class="primary" type="submit">Find dates</button>
+    </form>
+    <form id="alarm-notice-form" class="tool-form">
+      <label for="alarm-notice">Or paste a campus notice</label>
+      <textarea id="alarm-notice" rows="3" maxlength="8000" required placeholder="Last date for scholarship applications: 15 December."></textarea>
+      <div class="dialog-actions"><button class="button" type="submit">Find dates in notice</button></div>
+    </form>
+    <div id="alarm-notice-results" class="tool-results" aria-live="polite"></div>
+    <div id="alerts-results" class="tool-results" aria-live="polite"></div>
+
+          </details>
+        </div>
+        <section class="alarm-schedule" aria-labelledby="alarm-schedule-title">
+          <h2 id="alarm-schedule-title">Next 7 days</h2>
+          <div id="alarm-week"></div>
+        </section>
+      </div>
+    </section>
+  </div>
+
+  <dialog id="library" aria-labelledby="library-title">
+    <div class="dialog-heading"><h2 id="library-title">Uploaded Documents</h2><button class="icon-button" data-close type="button" aria-label="Close document library">×</button></div>
+    <p class="muted">Add campus materials for CampBuddy to reference.</p>
+    <input id="file" type="file" accept=".pdf,.docx,.txt" hidden>
+    <button class="drop-zone" id="drop-zone" type="button">
+      <span aria-hidden="true">↑</span>
+      <strong>Choose a file or drop it here</strong>
+      <small>PDF, DOCX, TXT</small>
+    </button>
+    <p class="upload-status" id="upload-status" role="status" hidden></p>
+    <div class="documents-heading"><h3>Indexed documents</h3><span class="count" id="document-count">–</span></div>
+    <div class="document-list" id="documents"><p class="muted">Loading documents…</p></div>
+    <div class="library-footer">
+      <span id="chunks">– chunks</span>
+      <button class="text-button danger" id="open-clear" type="button" disabled>Clear index</button>
+    </div>
+  </dialog>
+
+  <dialog id="settings" aria-labelledby="settings-title">
+    <div class="dialog-heading"><h2 id="settings-title">Settings</h2><button class="icon-button" data-close type="button" aria-label="Close settings">×</button></div>
+    <form id="settings-form">
+      <label for="api-url">Backend API URL</label>
+      <input id="api-url" type="url" required>
+      <p class="muted" id="api-status"></p>
+      <label for="top-k">Context passages per answer <output id="top-k-value" for="top-k">3</output></label>
+      <input id="top-k" type="range" min="1" max="10" value="3">
+      <div class="dialog-actions"><button class="primary" type="submit">Save settings</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="search" class="wide-dialog" aria-labelledby="search-title">
+    <div class="dialog-heading"><h2 id="search-title">Semantic search</h2><button class="icon-button" data-close type="button" aria-label="Close search">×</button></div>
+    <p class="muted">Find matching passages in your indexed documents.</p>
+    <form id="search-form" class="search-form">
+      <input id="search-query" type="search" aria-label="Search query" placeholder="Search campus documents…" required>
+      <button class="primary" id="run-search" type="submit">Search</button>
+    </form>
+    <div class="search-results" id="search-results" aria-live="polite"></div>
+  </dialog>
+
+  <dialog id="clear" aria-labelledby="clear-title">
+    <div class="dialog-heading"><h2 id="clear-title">Clear the document index?</h2><button class="icon-button" data-close type="button" aria-label="Close confirmation">×</button></div>
+    <p>This removes all indexed documents and passages from the connected backend.</p>
+    <form class="dialog-actions" id="clear-form">
+      <button class="button" data-close type="button" autofocus>Cancel</button>
+      <button class="primary destructive" type="submit">Clear index</button>
+    </form>
+  </dialog>
+  <dialog id="notice" class="wide-dialog" aria-labelledby="notice-title">
+    <div class="dialog-heading"><h2 id="notice-title">Notice Detective</h2><button class="icon-button" data-close type="button" aria-label="Close Notice Detective">×</button></div>
+    <p class="muted">Paste a campus notice to compare it with passages from your uploaded documents. Similarity alone cannot verify a notice.</p>
+    <form id="notice-form" class="tool-form">
+      <label for="notice-text">Notice text</label>
+      <textarea id="notice-text" rows="4" maxlength="4000" required placeholder="Paste the notice here…"></textarea>
+      <div class="dialog-actions"><button id="notice-submit" class="primary" type="submit">Find related sources</button></div>
+    </form>
+    <div id="notice-results" class="tool-results" aria-live="polite"></div>
+  </dialog>
+
+  <dialog id="alarm-editor" aria-labelledby="alarm-title">
+    <div class="dialog-heading"><h2 id="alarm-title">Create reminder</h2><button class="icon-button" data-close type="button" aria-label="Close reminder editor">×</button></div>
+    <p id="alarm-date-note" class="muted"></p>
+    <form id="alarm-editor-form">
+      <label for="alarm-name">Reminder title</label>
+      <input id="alarm-name" type="text" maxlength="120" required>
+      <div class="alarm-datetime">
+        <div><label for="alarm-date">Date</label><input id="alarm-date" type="date" required></div>
+        <div><label for="alarm-time">Time</label><input id="alarm-time" type="time" required></div>
+      </div>
+      <label for="alarm-lead">Notify me</label>
+      <select id="alarm-lead">
+        <option value="0">At the chosen time</option>
+        <option value="60">1 hour before</option>
+        <option value="1440">1 day before</option>
+        <option value="10080">1 week before</option>
+      </select>
+      <p id="alarm-error" class="danger" aria-live="polite"></p>
+      <div class="dialog-actions"><button class="primary" type="submit">Save reminder</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="gaps" class="wide-dialog" aria-labelledby="gaps-title">
+    <div class="dialog-heading"><h2 id="gaps-title">Knowledge Gap Dashboard</h2><button class="icon-button" data-close type="button" aria-label="Close Knowledge Gap Dashboard">×</button></div>
+    <p class="muted">Questions from this device that the connected document library couldn’t answer. Add relevant materials and retry them here.</p>
+    <div id="gap-summary" class="tool-heading" aria-live="polite"></div>
+    <div id="gap-results" class="tool-results"></div>
+  </dialog>
+</body>
+</html>

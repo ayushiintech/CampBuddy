@@ -1,0 +1,45 @@
+# Environment variables
+.env
+*.env
+backend/.env
+
+# Python & Virtual Environments
+venv/
+.venv/
+backend/venv/
+backend/.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Local FAISS Vector Store, database, and cache persistence
+data/
+backend/data/
+*.index
+*.sqlite3
+*.db
+*.npy
+backend/data/*.json
+
+# Ensure web app manifests are tracked
+!manifest.json
+!**/manifest.json
+
+# Build & Android artifacts
+build/
+.gradle/
+*.apk
+*.aab
+local.properties
+
+# IDE & Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS specific files
+.DS_Store
+Thumbs.db
